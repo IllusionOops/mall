@@ -1,0 +1,109 @@
+version: '3.8'
+services:
+  mysql:
+    hostname: mysql3307
+    image: mysql:latest
+    #network_mode: "host" # 如果需要容器使用宿主机IP(内网IP)，则可以配置此项
+    container_name: mysql3307 # 指定容器名称，如果不设置此参数，则由系统自动生成
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci # 设置utf8字符集
+    environment:
+      - TZ=Asia/Shanghai # 设置容器时区与宿主机保持一致
+      - MYSQL_ROOT_PASSWORD=141535 # 设置root密码
+    volumes:
+       - /etc/localtime:/etc/localtime:ro # 设置容器时区与宿主机保持一致
+       - /Users/wuyijie/Java/docker-mysql/mysql3307/data:/usr/local/mysql/data # 映射数据库保存目录到宿主机，防止数据丢失
+       - /Users/wuyijie/Java/docker-mysql/mysql3307/conf/my.cnf:/etc/my.cnf # 映射数据库配置文件
+       - /Users/wuyijie/Java/docker-mysql/mysql3307/logs:/usr/local/mysql/logs
+    ports:
+        - "3307:3306"
+#定义IP网络
+    networks:
+      basenetwork:
+        ipv4_address: 172.20.1.10
+  
+  redis:  
+    hostname: redis6379
+    image: redis:latest
+    container_name: redis6379
+    command: redis-server /etc/redis/redis.conf # 启动redis命令
+    environment:
+      - TZ=Asia/Shanghai
+    volumes:
+      - /etc/localtime:/etc/localtime:ro # 设置容器时区与宿主机保持一致
+      - /Users/wuyijie/Java/docker-redis/data:/data
+      - /Users/wuyijie/Java/docker-redis/myredis.conf:/etc/redis/redis.conf
+    ports:
+        - "6379:6379"
+    networks:
+      basenetwork:
+        ipv4_address: 172.20.1.20
+        
+  rabbitmq:
+    hostname: rabbitmq
+    image: rabbitmq:3.8.9-management
+    container_name: rabbitmq15672
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=141535
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+      - "4369:4369"
+      - "25672:25672"
+    volumes:
+      - /Users/wuyijie/Java/docker-rabbitmq/data:/var/lib/rabbitmq
+#定义IP网络
+    networks:
+      basenetwork:
+        ipv4_address: 172.20.1.30
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+        
+  nginx:
+    hostname: nginx
+    image: nginx:latest
+    container_name: nginx80
+    # 映射端口
+    ports:
+      - '80:80'
+      # - '8080:8080'
+    #定义IP网络
+    networks:
+      basenetwork:
+        ipv4_address: 172.20.1.40
+  # 数据卷挂载路径设置,将本机目录映射到容器目录
+    volumes:
+      - /Users/wuyijie/Java/docker-nginx/html:/usr/share/nginx/html
+      - /Users/wuyijie/Java/docker-nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+      - /Users/wuyijie/Java/docker-nginx/conf/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+      - /Users/wuyijie/Java/docker-nginx/logs:/var/log/nginx
+   # 设置环境变量,相当于docker run命令中的-e
+    environment:                       
+      - TZ=Asia/Shanghai
+      - LANG=en_US.UTF-8
+  tomcat:
+    hostname: tomcat
+    image: tomcat:latest
+    container_name: tomcat8080
+    ports: 
+      - '8080:8080'
+    networks:
+      basenetwork:
+        ipv4_address: 172.20.1.60
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - /Users/wuyijie/Java/docker-tomcat/webapps:/usr/local/tomcat/webapps
+      - /Users/wuyijie/Java/docker-tomcat/logs:/usr/local/tomcat/logs
+
+#定义网络。 docker network create basenetwork --subnet=172.20.0.0/16
+networks:
+   basenetwork:
+     external: true
+#     ipam:
+ #      config:
+#代表网段的CIDR格式的子网
+  #       - subnet: 172.20.1.0/24
+   #        gateway: 172.20.1.1

@@ -1,0 +1,79 @@
+spring:
+  redis:
+    database: 1
+    jedis:
+      pool:
+        max-active: 8
+        max-idle: 4
+        max-wait: 30000
+        min-idle: 0
+    host: 172.20.1.20
+    password: 141535
+    port: 6379
+
+  rabbitmq:
+    #    host: 101.37.69.4
+    #    port: 5672
+    addresses: 172.20.1.30:5672
+    username: admin
+    password: 141535
+    connection-timeout: 15000
+    listener:
+      simple:
+        concurrency: 5
+        max-concurrency: 10
+        prefetch: 5
+        ##设置消费端手动确认
+        acknowledge-mode: manual
+    #开启 confirm 确认机制
+    publisher-returns: true
+    #开启 return 确认机制
+    #    publisher-confirms: true
+    #设置为 true 后 消费者在消息没有被路由到合适队列情况下会被return监听，而不会自动删除
+    template:
+      mandatory: true
+    publisher-confirm-type: correlated
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+
+##  ribbon配置
+ribbon:
+  eureka:
+    enabled: true
+  ##  feign配置
+
+
+  ## hystrix配置   禁止服务超时时间
+
+
+  ##  tx-lcn分布式事务解决方案，服务端配置
+  #tx-lcn:
+  #  client:
+  #    manager-address: 127.0.0.1:8070
+  #zuul:
+  #  routes:
+  ##    配置本服务名
+  #    service-commodity:
+  #      ignored-pattern: /hello/**
+  ##      服务映射的路径，通过这个路径可以访问该服务，目的是为了不暴露ip，面向服务。这里zull依赖hystrix和rabbion
+  #      path: /commodity/**
+  #      serviceId: service-commodity
+  #  prefix: /api/**
+
+
+  ##  rabbitmq配置
+  #logging:
+  #config: classpath:logback-spring-bak.xml
+#  file:
+#    path: ./logs
+#    max-size: 10MB
+#    max-history: 7
+#  level: info
+
+
